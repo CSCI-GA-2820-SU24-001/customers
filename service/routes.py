@@ -30,8 +30,22 @@ from service.common import status  # HTTP Status Codes
 ######################################################################
 # GET INDEX
 ######################################################################
-@app.route("/")
-def index():
+# @app.route("/")
+# def index():
+#     """Root URL response"""
+#     app.logger.info("Request for Root URL")
+#     return (
+#         jsonify(
+#             name="Customer Service REST API",
+#             version="1.0",
+#             paths=url_for("list_customers", _external=True),
+#         ),
+#         status.HTTP_200_OK,
+#     )
+
+
+@app.route("/", methods=["GET"])
+def get_service_info():
     """Root URL response"""
     app.logger.info("Request for Root URL")
     return (
@@ -41,6 +55,18 @@ def index():
             paths=url_for("list_customers", _external=True),
         ),
         status.HTTP_200_OK,
+    )
+
+
+@app.route("/", methods=["POST", "PUT", "DELETE", "PATCH"])
+def handle_root_non_get_requests():
+    """Handle non-GET requests to the root URL"""
+    app.logger.info("Non-GET request for Root URL")
+    return (
+        jsonify(
+            error="Method not allowed. Please use GET method for this endpoint."
+        ),
+        status.HTTP_405_METHOD_NOT_ALLOWED,
     )
 
 

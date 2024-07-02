@@ -5,11 +5,11 @@ TestCustomer API Service Test Suite
 import os
 import logging
 from unittest import TestCase
+from datetime import date
 from wsgi import app
 from service.common import status
 from service.models import db, Customer
 from .factories import CustomerFactory
-from datetime import date
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"
@@ -144,7 +144,7 @@ class TestCustomerResource(TestCase):
         self.assertEqual(retrieved_customer["email"], test_customer.email)
         self.assertEqual(retrieved_customer["phone_number"], test_customer.phone_number)
         self.assertEqual(retrieved_customer["member_since"], test_customer.member_since.isoformat())
-        
+
         response = self.client.get(f"{BASE_URL}/-1")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         # self.assertIn("Customer with id [-1] not found", response.get_data(as_text=True))
@@ -192,6 +192,34 @@ class TestSadPaths(TestCase):
     def setUp(self):
         """Runs before each test"""
         self.client = app.test_client()
+
+    def test_post_request(self):
+        """It should return 405 Method Not Allowed for POST request"""
+        resp = self.client.post("/")
+        self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        data = resp.get_json()
+        self.assertEqual(data["error"], "Method not allowed. Please use GET method for this endpoint.")
+
+    def test_put_request(self):
+        """It should return 405 Method Not Allowed for PUT request"""
+        resp = self.client.put("/")
+        self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        data = resp.get_json()
+        self.assertEqual(data["error"], "Method not allowed. Please use GET method for this endpoint.")
+
+    def test_delete_request(self):
+        """It should return 405 Method Not Allowed for DELETE request"""
+        resp = self.client.delete("/")
+        self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        data = resp.get_json()
+        self.assertEqual(data["error"], "Method not allowed. Please use GET method for this endpoint.")
+
+    def test_patch_request(self):
+        """It should return 405 Method Not Allowed for PATCH request"""
+        resp = self.client.patch("/")
+        self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        data = resp.get_json()
+        self.assertEqual(data["error"], "Method not allowed. Please use GET method for this endpoint.")
 
     def test_method_not_allowed(self):
         """It should not Delete a Customer with no ID"""

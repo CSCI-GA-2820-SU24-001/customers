@@ -6,10 +6,10 @@ import os
 import logging
 from unittest import TestCase
 from unittest.mock import patch
+from datetime import date
 from wsgi import app
 from service.models import Customer, DataValidationError, db
 from .factories import CustomerFactory
-from datetime import date
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"
