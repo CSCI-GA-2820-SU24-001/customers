@@ -18,29 +18,29 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: postgres:alpine
+          image: postgres:15-alpine
           ports:
             - containerPort: 5432
               protocol: TCP
           env:
-            - name: POSTGRES_DB
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-creds
-                  key: database
-            - name: POSTGRES_USER
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-creds
-                  key: username
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: postgres-creds
                   key: password
+            - name: POSTGRES_USER
+              valueFrom:
+                  configMapKeyRef:
+                    name: postgres-config
+                    key: postgres_user
+            - name: POSTGRES_DB
+              valueFrom:
+                  configMapKeyRef:
+                    name: postgres-config
+                    key: postgres_db
           volumeMounts:
             - name: postgres-storage
-              mountPath: /var/lib/postgresql/data
+              mountPath: /var/lib/postgresql
           resources:
             limits:
               cpu: "0.50"
@@ -79,3 +79,12 @@ spec:
     targetPort: 5432
   selector:
     app: postgres
+  
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+data:
+  postgres_user: postgres
+  postgres_db: postgres 
