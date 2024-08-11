@@ -15,7 +15,7 @@ from .factories import CustomerFactory
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"
 )
-BASE_URL = "/customers"
+BASE_URL = "/api/customers"
 
 
 ######################################################################
@@ -350,8 +350,8 @@ class TestCustomerResource(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         new_customer = response.get_json()
         new_customer_id = new_customer["id"]
-
-        response = self.client.put(f"/customers/{new_customer_id}/suspend")
+        print(f"{BASE_URL}/{new_customer_id}/suspend")
+        response = self.client.put(f"{BASE_URL}/{new_customer_id}/suspend")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         response = self.client.get(f"{BASE_URL}/{new_customer_id}")

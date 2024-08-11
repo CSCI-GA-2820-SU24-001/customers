@@ -14,6 +14,7 @@ psycopg = {extras = ["binary"], version = "^3.1.19"}
 retry2 = "^0.9.5"
 python-dotenv = "^1.0.1"
 gunicorn = "^22.0.0"
+flask-restx = "^1.3.0"
 
 [tool.poetry.group.dev.dependencies]
 honcho = "^1.1.0"
@@ -43,7 +44,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pylint.'MESSAGES CONTROL']
 max-line-length = 127
-disable = "no-member,protected-access,global-statement"
+disable = "no-member,protected-access,global-statement,cyclic-import"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
