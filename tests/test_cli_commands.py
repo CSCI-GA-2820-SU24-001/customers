@@ -8,6 +8,7 @@ from click.testing import CliRunner
 # pylint: disable=unused-import
 from wsgi import app  # noqa: F401
 from service.common.cli_commands import db_create  # noqa: E402
+# pylint: disable=R0401
 
 
 class TestFlaskCLI(TestCase):
