@@ -44,7 +44,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pylint.'MESSAGES CONTROL']
 max-line-length = 127
-disable = "no-member,protected-access,global-statement"
+disable = "no-member,protected-access,global-statement,cyclic-import"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
