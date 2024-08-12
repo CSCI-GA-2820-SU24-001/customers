@@ -68,3 +68,25 @@ knative: ## Install Knative
 	$(info Installing Knative in the Cluster...)
 	kubectl apply -f https://github.com/knative/serving/releases/download/knative-v1.12.0/serving-crds.yaml
 	kubectl apply -f https://github.com/knative/serving/releases/download/knative-v1.12.0/serving-core.yaml
+
+.PHONY: tekton
+tekton: ## Install Tekton
+	$(info Installing Tekton in the Cluster...)
+	kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+	kubectl apply --filename https://storage.googleapis.com/tekton-releases/triggers/latest/release.yaml
+	kubectl apply --filename https://storage.googleapis.com/tekton-releases/triggers/latest/interceptors.yaml
+	kubectl apply --filename https://storage.googleapis.com/tekton-releases/dashboard/latest/tekton-dashboard-release.yaml
+
+.PHONY: tekton-clean
+tekton-clean: ## Clean up all PipelineRuns and TaskRuns
+	$(info Cleaning up all PipelineRuns and TaskRuns...)
+	tkn taskrun ls
+	tkn taskrun rm --all -f
+	tkn pipelinerun ls
+	tkn pipelinerun rm --all -f
+
+.PHONY: clustertasks
+clustertasks: ## Create Tekton Cluster Tasks
+	$(info Creating Tekton Cluster Tasks...)
+	wget -qO - https://raw.githubusercontent.com/tektoncd/catalog/main/task/openshift-client/0.2/openshift-client.yaml | sed 's/kind: Task/kind: ClusterTask/g' | kubectl create -f -
+	wget -qO - https://raw.githubusercontent.com/tektoncd/catalog/main/task/buildah/0.4/buildah.yaml | sed 's/kind: Task/kind: ClusterTask/g' | kubectl create -f -
