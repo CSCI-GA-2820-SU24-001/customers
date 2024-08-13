@@ -21,7 +21,6 @@ This service implements a REST API that allows you to Create, Read, Update
 and Delete Customers from the inventory of customers in the CustomerShop
 """
 
-from datetime import date
 from flask import jsonify, request, url_for, abort
 from flask import current_app as app  # Import Flask application
 from flask_restx import Resource, fields, reqparse, inputs
@@ -244,7 +243,6 @@ class CustomerCollection(Resource):
         customers = []
 
         args = customer_args.parse_args()
-
 
         if args["name"]:
             app.logger.info("Find by name: %s", args["name"])
