@@ -21,7 +21,6 @@ This service implements a REST API that allows you to Create, Read, Update
 and Delete Customers from the inventory of customers in the CustomerShop
 """
 
-from datetime import date
 from flask import jsonify, request, url_for, abort
 from flask import current_app as app  # Import Flask application
 from flask_restx import Resource, fields, reqparse, inputs
@@ -111,14 +110,20 @@ customer_args.add_argument(
     "name", type=str, location="args", required=False, help="List Customers by name"
 )
 customer_args.add_argument(
-    "category", type=str, location="args", required=False, help="List Customers by category"
+    "address", type=str, location="args", required=False, help="List Customers by address"
 )
 customer_args.add_argument(
-    "available",
-    type=inputs.boolean,
-    location="args",
-    required=False,
-    help="List Customers by availability",
+    "email", type=str, location="args", required=False, help="List Customers by email"
+)
+customer_args.add_argument(
+    "phone_number", type=str, location="args", required=False, help="List Customers by phone number"
+)
+customer_args.add_argument(
+    "member_since", type=inputs.date_from_iso8601, location="args", required=False,
+    help="List Customers by date of becoming a member"
+)
+customer_args.add_argument(
+    "status", type=str, location="args", required=False, help="List Customers by status",
 )
 
 
@@ -177,7 +182,6 @@ class CustomerResource(Resource):
         This endpoint will update a Customer based the body that is posted
         """
         app.logger.info("Request to Update a customer with id [%s]", customer_id)
-        check_content_type("application/json")
 
         # Attempt to find the Customer and abort if not found
         customer = Customer.find(customer_id)
@@ -237,30 +241,23 @@ class CustomerCollection(Resource):
 
         customers = []
 
-        # Parse any arguments from the query string
-        name = request.args.get("name")
-        address = request.args.get("address")
-        email = request.args.get("email")
-        phone_number = request.args.get("phone_number")
-        member_since = request.args.get("member_since")
+        args = customer_args.parse_args()
 
-        if name:
-            app.logger.info("Find by name: %s", name)
-            customers = Customer.find_by_name(name)
-        elif address:
-            app.logger.info("Find by address: %s", address)
-            customers = Customer.find_by_address(address)
-        elif email:
-            app.logger.info("Find by email: %s", address)
-            customers = Customer.find_by_email(email)
-        elif phone_number:
-            app.logger.info("Find by phone number: %s", phone_number)
-            customers = Customer.find_by_phone(phone_number)
-        elif member_since:
-            app.logger.info("Find by member_since: %s", member_since)
-            # Convert the member_since parameter to a date using fromisoformat
-            member_since_date = date.fromisoformat(member_since)
-            customers = Customer.find_by_member_since(member_since_date)
+        if args["name"]:
+            app.logger.info("Find by name: %s", args["name"])
+            customers = Customer.find_by_name(args["name"])
+        elif args["address"]:
+            app.logger.info("Find by address: %s", args["address"])
+            customers = Customer.find_by_address(args["address"])
+        elif args["email"]:
+            app.logger.info("Find by email: %s", args["email"])
+            customers = Customer.find_by_email(args["email"])
+        elif args["phone_number"]:
+            app.logger.info("Find by phone number: %s", args["phone_number"])
+            customers = Customer.find_by_phone(args["phone_number"])
+        elif args["member_since"]:
+            app.logger.info("Find by member_since: %s", args["member_since"])
+            customers = Customer.find_by_member_since(args["member_since"])
         else:
             app.logger.info("Find all")
             customers = Customer.all()
@@ -282,13 +279,10 @@ class CustomerCollection(Resource):
         This endpoint will create a Customer based the data in the body that is posted
         """
         app.logger.info("Request to Create a Customer...")
-        check_content_type("application/json")
 
         customer = Customer()
-        # Get the data from the request and deserialize it
-        data = request.get_json()
-        app.logger.info("Processing: %s", data)
-        customer.deserialize(data)
+        app.logger.info("Processing: %s", api.payload)
+        customer.deserialize(api.payload)
 
         # Save the new Customer to the database
         customer.create()
@@ -323,196 +317,5 @@ class SuspendResource(Resource):
             app.logger.info("Customer with ID: %d found.", customer.id)
             customer.status = "suspended"
             customer.update()
-        else:
-            abort(
-                status.HTTP_404_NOT_FOUND,
-                f"Customer with id '{customer_id}' was not found.",
-            )
 
         return customer.serialize(), status.HTTP_200_OK
-
-
-# ######################################################################
-# # CREATE A NEW CUSTOMER
-# ######################################################################
-# @app.route("/customers", methods=["POST"])
-# def create_customers():
-#     """
-#     Create a Customer
-#     This endpoint will create a Customer based the data in the body that is posted
-#     """
-#     app.logger.info("Request to Create a Customer...")
-#     check_content_type("application/json")
-
-#     customer = Customer()
-#     # Get the data from the request and deserialize it
-#     data = request.get_json()
-#     app.logger.info("Processing: %s", data)
-#     customer.deserialize(data)
-
-#     # Save the new Customer to the database
-#     customer.create()
-#     app.logger.info("Customer with new id [%s] saved!", customer.id)
-
-#     # Return the location of the new Customer
-#     location_url = url_for("get_customer", customer_id=customer.id, _external=True)
-#     return (
-#         jsonify(customer.serialize()),
-#         status.HTTP_201_CREATED,
-#         {"Location": location_url},
-#     )
-
-
-# ######################################################################
-# # READ A CUSTOMER
-# ######################################################################
-# @app.route("/customers/<int:customer_id>", methods=["GET"])
-# def get_customer(customer_id):
-#     """
-#     Read a customer
-#     This endpoint will read a customer based on its id
-#     """
-#     app.logger.info("Request to Retrieve a Customer with id [%s]...", customer_id)
-#     customer = Customer.find(customer_id)
-#     if not customer:
-#         abort(status.HTTP_404_NOT_FOUND, f"Customer with id [{customer_id}] not found")
-
-#     app.logger.info("Returning customer: %s", customer.name)
-#     return jsonify(customer.serialize()), status.HTTP_200_OK
-
-
-# ######################################################################
-# # UPDATE AN EXISTING CUSTOMER
-# ######################################################################
-# @app.route("/customers/<int:customer_id>", methods=["PUT"])
-# def update_customers(customer_id):
-#     """
-#     Update a Customer
-
-#     This endpoint will update a Customer based the body that is posted
-#     """
-#     app.logger.info("Request to Update a customer with id [%s]", customer_id)
-#     check_content_type("application/json")
-
-#     # Attempt to find the Customer and abort if not found
-#     customer = Customer.find(customer_id)
-#     if not customer:
-#         abort(
-#             status.HTTP_404_NOT_FOUND,
-#             f"Customer with id '{customer_id}' was not found.",
-#         )
-
-#     # Update the Customer with the new data
-#     data = request.get_json()
-#     app.logger.info("Processing: %s", data)
-#     customer.deserialize(data)
-
-#     # Save the updates to the database
-#     customer.update()
-
-#     app.logger.info("Customer with ID: %d updated.", customer.id)
-#     return jsonify(customer.serialize()), status.HTTP_200_OK
-
-
-# ############################################################
-# # LIST A CUSTOMER
-# ############################################################
-# @app.route("/customers", methods=["GET"])
-# def list_customers():
-#     """List customers"""
-#     app.logger.info("Request for customer list")
-
-#     customers = []
-
-#     # Parse any arguments from the query string
-#     name = request.args.get("name")
-#     address = request.args.get("address")
-#     email = request.args.get("email")
-#     phone_number = request.args.get("phone_number")
-#     member_since = request.args.get("member_since")
-
-#     if name:
-#         app.logger.info("Find by name: %s", name)
-#         customers = Customer.find_by_name(name)
-#     elif address:
-#         app.logger.info("Find by address: %s", address)
-#         customers = Customer.find_by_address(address)
-#     elif email:
-#         app.logger.info("Find by email: %s", address)
-#         customers = Customer.find_by_email(email)
-#     elif phone_number:
-#         app.logger.info("Find by phone number: %s", phone_number)
-#         customers = Customer.find_by_phone(phone_number)
-#     elif member_since:
-#         app.logger.info("Find by member_since: %s", member_since)
-#         # Convert the member_since parameter to a date using fromisoformat
-#         member_since_date = date.fromisoformat(member_since)
-#         customers = Customer.find_by_member_since(member_since_date)
-#     else:
-#         app.logger.info("Find all")
-#         customers = Customer.all()
-
-#     results = [customer.serialize() for customer in customers]
-#     app.logger.info("Returning %d customers", len(results))
-#     return jsonify(results), status.HTTP_200_OK
-
-
-# ############################################################
-# # DELETE A CUSTOMER
-# ############################################################
-# @app.route("/customers/<int:customer_id>", methods=["DELETE"])
-# def delete_customers(customer_id):
-#     """Delete customer"""
-#     app.logger.info("Request to Delete a customer with id [%s]..", customer_id)
-
-#     customer = Customer.find(customer_id)
-#     if customer:
-#         app.logger.info("Customer with ID: %d found.", customer.id)
-#         customer.delete()
-
-#     app.logger.info("Customer with ID: %d delete complete.", customer_id)
-#     return {}, status.HTTP_204_NO_CONTENT
-
-
-# ############################################################
-# # SUSPEND A CUSTOMER
-# ############################################################
-# @app.route("/customers/<int:customer_id>/suspend", methods=["PUT"])
-# def suspend_customer(customer_id):
-#     """Suspend a customer's account"""
-#     app.logger.info("Request to suspend a customer with id [%s]..", customer_id)
-
-#     customer = Customer.find(customer_id)
-#     if customer:
-#         app.logger.info("Customer with ID: %d found.", customer.id)
-#         customer.status = "suspended"
-#         customer.update()
-#     else:
-#         abort(
-#             status.HTTP_404_NOT_FOUND,
-#             f"Customer with id '{customer_id}' was not found.",
-#         )
-
-#     return jsonify(customer.serialize()), status.HTTP_200_OK
-
-
-######################################################################
-# Checks the ContentType of a request
-######################################################################
-def check_content_type(content_type) -> None:
-    """Checks that the media type is correct"""
-    if "Content-Type" not in request.headers:
-        app.logger.error("No Content-Type specified.")
-        abort(
-            status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-            f"Content-Type must be {content_type}",
-        )
-
-    if request.headers["Content-Type"] == content_type:
-        return
-
-    app.logger.error("Invalid Content-Type: %s", request.headers["Content-Type"])
-    abort(
-        status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-        f"Content-Type must be {content_type}",
-    )
