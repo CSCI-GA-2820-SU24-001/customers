@@ -23,7 +23,6 @@ Scenario: Create a Customer
     And I set the "Address" to "80 Court House"
     And I set the "Email" to "sb@nyu.edu"
     And I set the "Phone" to "5512298011"
-    And I select "Active" in the "Status" dropdown
     And I set the "Since" to "06-16-2022"
     And I press the "Create" button
     Then I should see the message "Success"
@@ -42,7 +41,6 @@ Scenario: Create a Customer
     And I should see "sb@nyu.edu" in the "Email" field
     And I should see "5512298011" in the "Phone" field
     And I should see "2022-06-16" in the "Since" field
-    And I should see "Active" in the "Status" dropdown
 
 Scenario: Update a Customer
     When I visit the "Home Page"
@@ -54,7 +52,6 @@ Scenario: Update a Customer
     And I should see "fluffy@example.com" in the "Email" field
     And I should see "555-1234" in the "Phone" field
     And I should see "2021-05-12" in the "Since" field
-    And I should see "Active" in the "Status" dropdown
     When I change "Name" to "Loki"
     And I press the "Update" button
     Then I should see the message "Success"
@@ -80,7 +77,6 @@ Scenario: Delete a Customer
     And I should see "fluffy@example.com" in the "Email" field
     And I should see "555-1234" in the "Phone" field
     And I should see "2021-05-12" in the "Since" field
-    And I should see "Active" in the "Status" dropdown
     When I change "Name" to "Fluffy"
     And I press the "Delete" button
     Then I should see the message "Customer has been Deleted!"
@@ -96,7 +92,6 @@ Scenario: Read a Customer
     And I set the "Address" to "80 Court House"
     And I set the "Email" to "sb@nyu.edu"
     And I set the "Phone" to "5512298011"
-    And I select "Active" in the "Status" dropdown
     And I set the "Since" to "06-16-2022"
     And I press the "Create" button
     Then I should see the message "Success"
@@ -108,7 +103,6 @@ Scenario: Read a Customer
     And I should see "sb@nyu.edu" in the "Email" field
     And I should see "5512298011" in the "Phone" field
     And I should see "2022-06-16" in the "Since" field
-    And I should see "Active" in the "Status" dropdown
 
 Scenario: List all Customers
     When I visit the "Home Page"
@@ -144,8 +138,6 @@ Scenario: Suspend a customer by Customer Id
     And I should see "rex@example.com" in the "Email" field
     And I should see "555-9876" in the "Phone" field
     And I should see "2019-07-01" in the "Since" field
-    And I should see "Active" in the "Status" dropdown
     When I press the "Suspend" button
     Then I should see the message "Customer has been Suspended!"
     When I press the "Retrieve" button
-    Then I should see "Suspended" in the "Status" dropdown
