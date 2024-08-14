@@ -23,6 +23,10 @@ spec:
       description: The name of the image to build
       type: string
       default: 'image-registry.openshift-image-registry.svc:5000/$(context.pipelineRun.namespace)/$(params.APP_NAME):latest'
+    - default: 'https://customers-ch4262-dev.apps.sandbox-m2.ll9k.p1.openshiftapps.com/'
+      description: The base URL for the application
+      name: BASE_URL
+      type: string
   tasks:
     - name: git-clone
       params:
